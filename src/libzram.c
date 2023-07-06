@@ -35,7 +35,11 @@ GQuark libzram_error_quark (void)
     return g_quark_from_static_string ("g-libzram-error-quark");
 }
 
-
+/**
+ * libzram_stats_copy: (skip)
+ *
+ * Creates a new copy of @data.
+ */
 LibzramStats* libzram_stats_copy (LibzramStats *data) {
     if (data == NULL)
         return NULL;
@@ -55,6 +59,11 @@ LibzramStats* libzram_stats_copy (LibzramStats *data) {
     return new;
 }
 
+/**
+ * libzram_stats_free: (skip)
+ *
+ * Frees @data.
+ */
 void libzram_stats_free (LibzramStats *data) {
     if (data == NULL)
         return;
@@ -62,6 +71,8 @@ void libzram_stats_free (LibzramStats *data) {
     g_free (data->comp_algorithm);
     g_free (data);
 }
+
+G_DEFINE_BOXED_TYPE (LibzramStats, libzram_stats, libzram_stats_copy, libzram_stats_free);
 
 static gboolean check_deps (GError **error) {
     gboolean ret = FALSE;

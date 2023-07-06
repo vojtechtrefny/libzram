@@ -1,4 +1,5 @@
 #include <glib.h>
+#include <glib-object.h>
 
 #ifndef LIBZRAM_H
 #define LIBZRAM_H
@@ -10,6 +11,12 @@ typedef enum {
     LIBZRAM_ERROR_NOEXIST,
 } LibzramError;
 
+/**
+ * LibzramStats:
+ *
+ * see zRAM kernel documentation for details
+ * (https://www.kernel.org/doc/Documentation/blockdev/zram.txt)
+ */
 typedef struct LibzramStats {
     guint64 disksize;
     guint64 num_reads;
@@ -22,6 +29,10 @@ typedef struct LibzramStats {
     guint64 compr_data_size;
     guint64 mem_used_total;
 } LibzramStats;
+
+LibzramStats* libzram_stats_copy (LibzramStats *data);
+void libzram_stats_free (LibzramStats *data);
+GType libzram_stats_get_type (void);
 
 gboolean libzram_create_devices (guint64 num_devices, const guint64 *sizes, const guint64 *nstreams, GError **error);
 gboolean libzram_destroy_devices (GError **error);
