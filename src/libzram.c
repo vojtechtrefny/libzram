@@ -28,23 +28,23 @@ static volatile gboolean have_zram = FALSE;
 G_LOCK_DEFINE_STATIC (have_zram);
 
 /**
- * libzram_error_quark: (skip)
+ * zram_error_quark: (skip)
  */
-GQuark libzram_error_quark (void)
+GQuark zram_error_quark (void)
 {
-    return g_quark_from_static_string ("g-libzram-error-quark");
+    return g_quark_from_static_string ("g-zram-error-quark");
 }
 
 /**
- * libzram_stats_copy: (skip)
+ * zram_stats_copy: (skip)
  *
  * Creates a new copy of @data.
  */
-LibzramStats* libzram_stats_copy (LibzramStats *data) {
+ZramStats* zram_stats_copy (ZramStats *data) {
     if (data == NULL)
         return NULL;
 
-    LibzramStats *new = g_new0 (LibzramStats, 1);
+    ZramStats *new = g_new0 (ZramStats, 1);
     new->disksize = data->disksize;
     new->num_reads = data->num_reads;
     new->num_writes = data->num_writes;
@@ -60,11 +60,11 @@ LibzramStats* libzram_stats_copy (LibzramStats *data) {
 }
 
 /**
- * libzram_stats_free: (skip)
+ * zram_stats_free: (skip)
  *
  * Frees @data.
  */
-void libzram_stats_free (LibzramStats *data) {
+void zram_stats_free (ZramStats *data) {
     if (data == NULL)
         return;
 
@@ -72,7 +72,7 @@ void libzram_stats_free (LibzramStats *data) {
     g_free (data);
 }
 
-G_DEFINE_BOXED_TYPE (LibzramStats, libzram_stats, libzram_stats_copy, libzram_stats_free);
+G_DEFINE_BOXED_TYPE (ZramStats, zram_stats, zram_stats_copy, zram_stats_free);
 
 static gboolean check_deps (GError **error) {
     gboolean ret = FALSE;
@@ -91,7 +91,7 @@ static gboolean check_deps (GError **error) {
 }
 
 /**
- * libzram_create_devices:
+ * zram_create_devices:
  * @num_devices: number of devices to create
  * @sizes: (array zero-terminated=1): requested sizes (in bytes) for created zRAM
  *                                    devices
@@ -103,7 +103,7 @@ static gboolean check_deps (GError **error) {
  *
  * **Lengths of @size and @nstreams (if given) have to be >= @num_devices!**
  */
-gboolean libzram_create_devices (guint64 num_devices, const guint64 *sizes, const guint64 *nstreams, GError **error) {
+gboolean zram_create_devices (guint64 num_devices, const guint64 *sizes, const guint64 *nstreams, GError **error) {
     g_autofree gchar *opts = NULL;
     gboolean success = FALSE;
     guint64 i = 0;
@@ -162,7 +162,7 @@ gboolean libzram_create_devices (guint64 num_devices, const guint64 *sizes, cons
 }
 
 /**
- * libzram_destroy_devices:
+ * zram_destroy_devices:
  * @error: (out): place to store error (if any)
  *
  * Returns: whether zRAM devices were successfully destroyed or not
@@ -171,7 +171,7 @@ gboolean libzram_create_devices (guint64 num_devices, const guint64 *sizes, cons
  * module and thus destroy all of them. That's why this function doesn't allow
  * specification of which devices should be destroyed.
  */
-gboolean libzram_destroy_devices (GError **error) {
+gboolean zram_destroy_devices (GError **error) {
     if (!check_deps (error))
         return FALSE;
 
@@ -195,7 +195,7 @@ static guint64 get_number_from_file (const gchar *path, GError **error) {
 }
 
 /**
- * libzram_add_device:
+ * zram_add_device:
  * @size: size of the zRAM device to add
  * @nstreams: number of streams to use for the new device (or 0 to use the defaults)
  * @device: (allow-none) (out): place to store the name of the newly added device
@@ -203,7 +203,7 @@ static guint64 get_number_from_file (const gchar *path, GError **error) {
  *
  * Returns: whether a new zRAM device was added or not
  */
-gboolean libzram_add_device (guint64 size, guint64 nstreams, gchar **device, GError **error) {
+gboolean zram_add_device (guint64 size, guint64 nstreams, gchar **device, GError **error) {
     g_autofree gchar *path = NULL;
     gboolean success = FALSE;
     guint64 dev_num = 0;
@@ -251,13 +251,13 @@ gboolean libzram_add_device (guint64 size, guint64 nstreams, gchar **device, GEr
 }
 
 /**
- * libzram_remove_device:
+ * zram_remove_device:
  * @device: zRAM device to remove
  * @error: (out): place to store error (if any)
  *
  * Returns: whether the @device was successfully removed or not
  */
-gboolean libzram_remove_device (const gchar *device, GError **error) {
+gboolean zram_remove_device (const gchar *device, GError **error) {
     gchar *dev_num_str = NULL;
     gboolean success = FALSE;
 
@@ -269,7 +269,7 @@ gboolean libzram_remove_device (const gchar *device, GError **error) {
     else if (g_str_has_prefix (device, "zram"))
         dev_num_str = (gchar *) device + 4;
     else {
-        g_set_error (error, LIBZRAM_ERROR, LIBZRAM_ERROR_INVAL,
+        g_set_error (error, ZRAM_ERROR, ZRAM_ERROR_INVAL,
                      "Invalid zRAM device given: '%s'", device);
         return FALSE;
     }
@@ -283,7 +283,7 @@ gboolean libzram_remove_device (const gchar *device, GError **error) {
 
 /* Get the zRAM stats using the "old" sysfs files --  /sys/block/zram<id>/num_reads,
    /sys/block/zram<id>/invalid_io etc. */
-static gboolean get_zram_stats_old (const gchar *device, LibzramStats* stats, GError **error) {
+static gboolean get_zram_stats_old (const gchar *device, ZramStats* stats, GError **error) {
     gchar *path = NULL;
 
     path = g_strdup_printf ("/sys/block/%s/num_reads", device);
@@ -291,7 +291,7 @@ static gboolean get_zram_stats_old (const gchar *device, LibzramStats* stats, GE
     g_free (path);
     if (*error) {
         g_clear_error (error);
-        g_set_error (error, LIBZRAM_ERROR, LIBZRAM_ERROR_INVAL,
+        g_set_error (error, ZRAM_ERROR, ZRAM_ERROR_INVAL,
                      "Failed to get 'num_reads' for '%s' zRAM device", device);
         return FALSE;
     }
@@ -301,7 +301,7 @@ static gboolean get_zram_stats_old (const gchar *device, LibzramStats* stats, GE
     g_free (path);
     if (*error) {
         g_clear_error (error);
-        g_set_error (error, LIBZRAM_ERROR, LIBZRAM_ERROR_INVAL,
+        g_set_error (error, ZRAM_ERROR, ZRAM_ERROR_INVAL,
                      "Failed to get 'num_writes' for '%s' zRAM device", device);
         return FALSE;
     }
@@ -311,7 +311,7 @@ static gboolean get_zram_stats_old (const gchar *device, LibzramStats* stats, GE
     g_free (path);
     if (*error) {
         g_clear_error (error);
-        g_set_error (error, LIBZRAM_ERROR, LIBZRAM_ERROR_INVAL,
+        g_set_error (error, ZRAM_ERROR, ZRAM_ERROR_INVAL,
                      "Failed to get 'invalid_io' for '%s' zRAM device", device);
         return FALSE;
     }
@@ -321,7 +321,7 @@ static gboolean get_zram_stats_old (const gchar *device, LibzramStats* stats, GE
     g_free (path);
     if (*error) {
         g_clear_error (error);
-        g_set_error (error, LIBZRAM_ERROR, LIBZRAM_ERROR_INVAL,
+        g_set_error (error, ZRAM_ERROR, ZRAM_ERROR_INVAL,
                      "Failed to get 'zero_pages' for '%s' zRAM device", device);
         return FALSE;
     }
@@ -331,7 +331,7 @@ static gboolean get_zram_stats_old (const gchar *device, LibzramStats* stats, GE
     g_free (path);
     if (*error) {
         g_clear_error (error);
-        g_set_error (error, LIBZRAM_ERROR, LIBZRAM_ERROR_INVAL,
+        g_set_error (error, ZRAM_ERROR, ZRAM_ERROR_INVAL,
                      "Failed to get 'orig_data_size' for '%s' zRAM device", device);
         return FALSE;
     }
@@ -341,7 +341,7 @@ static gboolean get_zram_stats_old (const gchar *device, LibzramStats* stats, GE
     g_free (path);
     if (*error) {
         g_clear_error (error);
-        g_set_error (error, LIBZRAM_ERROR, LIBZRAM_ERROR_INVAL,
+        g_set_error (error, ZRAM_ERROR, ZRAM_ERROR_INVAL,
                      "Failed to get 'compr_data_size' for '%s' zRAM device", device);
         return FALSE;
     }
@@ -351,7 +351,7 @@ static gboolean get_zram_stats_old (const gchar *device, LibzramStats* stats, GE
     g_free (path);
     if (*error) {
         g_clear_error (error);
-        g_set_error (error, LIBZRAM_ERROR, LIBZRAM_ERROR_INVAL,
+        g_set_error (error, ZRAM_ERROR, ZRAM_ERROR_INVAL,
                      "Failed to get 'mem_used_total' for '%s' zRAM device", device);
         return FALSE;
     }
@@ -361,7 +361,7 @@ static gboolean get_zram_stats_old (const gchar *device, LibzramStats* stats, GE
 
 /* Get the zRAM stats using the "new" sysfs files -- /sys/block/zram<id>/stat,
   /sys/block/zram<id>/io_stat etc. */
-static gboolean get_zram_stats_new (const gchar *device, LibzramStats* stats, GError **error) {
+static gboolean get_zram_stats_new (const gchar *device, ZramStats* stats, GError **error) {
     gchar *path = NULL;
     gboolean success = FALSE;
     gint scanned = 0;
@@ -380,7 +380,7 @@ static gboolean get_zram_stats_new (const gchar *device, LibzramStats* stats, GE
                       &stats->num_reads, &stats->num_writes);
     g_free (content);
     if (scanned != 2) {
-        g_set_error (error, LIBZRAM_ERROR, LIBZRAM_ERROR_INVAL,
+        g_set_error (error, ZRAM_ERROR, ZRAM_ERROR_INVAL,
                      "Failed to get 'stat' for '%s' zRAM device", device);
         return FALSE;
     }
@@ -398,7 +398,7 @@ static gboolean get_zram_stats_new (const gchar *device, LibzramStats* stats, GE
                       &stats->invalid_io);
     g_free (content);
     if (scanned != 1) {
-        g_set_error (error, LIBZRAM_ERROR, LIBZRAM_ERROR_INVAL,
+        g_set_error (error, ZRAM_ERROR, ZRAM_ERROR_INVAL,
                      "Failed to get 'io_stat' for '%s' zRAM device", device);
         return FALSE;
     }
@@ -417,7 +417,7 @@ static gboolean get_zram_stats_new (const gchar *device, LibzramStats* stats, GE
                       &stats->orig_data_size, &stats->compr_data_size, &stats->mem_used_total, &stats->zero_pages);
     g_free (content);
     if (scanned != 4) {
-        g_set_error (error, LIBZRAM_ERROR, LIBZRAM_ERROR_INVAL,
+        g_set_error (error, ZRAM_ERROR, ZRAM_ERROR_INVAL,
                      "Failed to get 'mm_stat' for '%s' zRAM device", device);
         return FALSE;
     }
@@ -427,28 +427,28 @@ static gboolean get_zram_stats_new (const gchar *device, LibzramStats* stats, GE
 
 
 /**
- * libzram_get_stats:
+ * zram_get_stats:
  * @device: zRAM device to get stats for
  * @error: (out): place to store error (if any)
  *
  * Returns: (transfer full): statistics for the zRAM device
  */
-LibzramStats* libzram_get_stats (const gchar *device, GError **error) {
+ZramStats* zram_get_stats (const gchar *device, GError **error) {
     gchar *path = NULL;
     gboolean success = FALSE;
-    LibzramStats *ret = NULL;
+    ZramStats *ret = NULL;
 
     if (!check_deps (error))
         return FALSE;
 
-    ret = g_new0 (LibzramStats, 1);
+    ret = g_new0 (ZramStats, 1);
 
     if (g_str_has_prefix (device, "/dev/"))
         device += 5;
 
     path = g_strdup_printf ("/sys/block/%s", device);
     if (access (path, R_OK) != 0) {
-        g_set_error (error, LIBZRAM_ERROR, LIBZRAM_ERROR_NOEXIST,
+        g_set_error (error, ZRAM_ERROR, ZRAM_ERROR_NOEXIST,
                      "Device '%s' doesn't seem to exist", device);
         g_free (path);
         g_free (ret);
@@ -461,7 +461,7 @@ LibzramStats* libzram_get_stats (const gchar *device, GError **error) {
     g_free (path);
     if (*error) {
         g_clear_error (error);
-        g_set_error (error, LIBZRAM_ERROR, LIBZRAM_ERROR_INVAL,
+        g_set_error (error, ZRAM_ERROR, ZRAM_ERROR_INVAL,
                      "Failed to get 'disksize' for '%s' zRAM device", device);
         g_free (ret);
         return NULL;
@@ -472,7 +472,7 @@ LibzramStats* libzram_get_stats (const gchar *device, GError **error) {
     g_free (path);
     if (*error) {
         g_clear_error (error);
-        g_set_error (error, LIBZRAM_ERROR, LIBZRAM_ERROR_INVAL,
+        g_set_error (error, ZRAM_ERROR, ZRAM_ERROR_INVAL,
                      "Failed to get 'max_comp_streams' for '%s' zRAM device", device);
         g_free (ret);
         return NULL;
@@ -483,7 +483,7 @@ LibzramStats* libzram_get_stats (const gchar *device, GError **error) {
     g_free (path);
     if (!success) {
         g_clear_error (error);
-        g_set_error (error, LIBZRAM_ERROR, LIBZRAM_ERROR_INVAL,
+        g_set_error (error, ZRAM_ERROR, ZRAM_ERROR_INVAL,
                      "Failed to get 'comp_algorithm' for '%s' zRAM device", device);
         g_free (ret);
         return NULL;

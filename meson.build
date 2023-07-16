@@ -32,11 +32,11 @@ gnome = import('gnome')
 
 zram_gir = gnome.generate_gir(zram_lib,
                               sources: zram_sources + zram_headers,
-                              namespace: 'Libzram',
+                              namespace: 'Zram',
                               nsversion: '0.1',
-                              identifier_prefix: 'Libzram',
-                              symbol_prefix: 'libzram',
-                              export_packages: 'libzram',
+                              identifier_prefix: 'Zram',
+                              symbol_prefix: 'zram',
+                              export_packages: 'zram',
                               includes: [ 'GObject-2.0', 'Gio-2.0'],
                               header: 'include/libzram.h',
                               install: true)
