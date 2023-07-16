@@ -40,3 +40,12 @@ zram_gir = gnome.generate_gir(zram_lib,
                               includes: [ 'GObject-2.0', 'Gio-2.0'],
                               header: 'include/libzram.h',
                               install: true)
+
+tests_env = environment()
+tests_env.set('GI_TYPELIB_PATH', meson.current_build_dir())
+tests_env.set('LD_LIBRARY_PATH', meson.current_build_dir())
+test('zram python test suite',
+     find_program('./tests/zram_test.py'),
+     workdir : meson.current_source_dir(),
+     env : tests_env,
+     timeout : 0)
