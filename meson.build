@@ -14,11 +14,12 @@ zram_sources = ['src/libzram.c']
 inc = include_directories('include')
 install_headers('include/libzram.h')
 
-zram_lib = library('zram',
-                   zram_sources,
-                   include_directories : inc,
-                   dependencies : [glib_dep, gio_dep, bd_dep],
-                   install : true)
+zram_lib = shared_library('zram',
+                          zram_sources,
+                          include_directories : inc,
+                          dependencies : [glib_dep, gio_dep, bd_dep],
+                          install : true,
+                          soversion : '0')
 
 pkg_mod = import('pkgconfig')
 pkg_mod.generate(name : meson.project_name(),
