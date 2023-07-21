@@ -43,6 +43,14 @@ def read_file(filename):
 
 class ZRAMTestCase(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        if os.geteuid() != 0:
+            raise unittest.SkipTest("requires root privileges")
+
+        if not _can_load_zram():
+            raise unittest.SkipTest("cannot load the 'zram' module")
+
     def setUp(self):
         self.addCleanup(self._clean_up)
         self._loaded_zram_module = False
@@ -52,7 +60,6 @@ class ZRAMTestCase(unittest.TestCase):
         if self._loaded_zram_module:
             os.system("rmmod zram")
 
-    @unittest.skipUnless(_can_load_zram(), "cannot load the 'zram' module")
     def test_create_destroy_devices(self):
         # the easiest case
         with _track_module_load(self, "zram", "_loaded_zram_module"):
@@ -77,7 +84,6 @@ class ZRAMTestCase(unittest.TestCase):
             self.assertTrue(Zram.destroy_devices())
             time.sleep(1)
 
-    @unittest.skipUnless(_can_load_zram(), "cannot load the 'zram' module")
     def test_zram_add_remove_device(self):
         """Verify that it is possible to add and remove a zram device"""
 
@@ -122,7 +128,6 @@ class ZRAMTestCase(unittest.TestCase):
             self.assertTrue(Zram.destroy_devices())
             time.sleep(5)
 
-    @unittest.skipUnless(_can_load_zram(), "cannot load the 'zram' module")
     def test_zram_get_stats(self):
         """Verify that it is possible to get stats for a zram device"""
 
