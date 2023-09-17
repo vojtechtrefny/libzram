@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run:   |
+         sudo apt-get -qq update
+         sudo apt-get -y -qq install meson
+         sudo apt-get -y -qq install libblockdev-utils-dev libglib2.0-dev libgirepository1.0-dev
+    - name: Compile
+      run: meson setup builddir && cd builddir && meson compile
