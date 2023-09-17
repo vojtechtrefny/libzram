@@ -8,5 +8,11 @@ meson compile
 ```
 
 #### Dependencies
- * `libblockdev-utils`
- * `glib2`
+ * Fedora
+   * `libblockdev-utils-devel`
+   * `glib2-devel`
+   * `gobject-introspection-devel`
+ * Ubuntu/Debian
+   * `libblockdev-utils-dev`
+   * `libglib2.0-dev`
+   * `libgirepository1.0-dev`
