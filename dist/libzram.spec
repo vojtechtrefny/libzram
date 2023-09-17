@@ -8,6 +8,8 @@ URL:            https://github.com/vojtechtrefny/libzram
 Source:         https://github.com/vojtechtrefny/libzram/releases/download/%{version}-%{release}/%{name}-%{version}.tar.xz
 
 BuildRequires:  meson
+BuildRequires:  gcc
+BuildRequires:  gobject-introspection-devel
 BuildRequires:  libblockdev-utils-devel
 BuildRequires:  glib2-devel
 
